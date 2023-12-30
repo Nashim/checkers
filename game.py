@@ -80,26 +80,20 @@ class Game:
         return moves
     
     def find_next_jump(self, move, player):
+        moves = np.empty((0, MAX_MOVE_LEN, 2), dtype=int)
         next_row = move[-1][0] + player
         land_row = next_row + player
-        next_moves_r = np.empty((0, MAX_MOVE_LEN, 2), dtype=int)
-        next_moves_l = np.empty((0, MAX_MOVE_LEN, 2), dtype=int)
+        next_moves = np.empty((0, MAX_MOVE_LEN, 2), dtype=int)
         if land_row < BOARD_SIZE and land_row >= 0:
-            if move[-1][1] + 2 < BOARD_SIZE and move[-1][1] + 2 >= 0:
-                if self.board[land_row, move[-1][1] + 2] == EMPTY and self.board[next_row, move[-1][1] + 1] == -player:
-                    new_move = np.append(move, [(land_row, move[-1][1] + 2)], axis=0)
-                    next_moves_r = self.find_next_jump(new_move, player)
-                    if next_moves_r.size == 0:
-                        next_moves_r = np.array([new_move])
-            if move[-1][1] - 2 < BOARD_SIZE and move[-1][1] - 2 >= 0:
-                if self.board[land_row, move[-1][1] - 2] == EMPTY and self.board[next_row, move[-1][1] - 1] == -player:
-                    new_move = np.append(move, [(land_row, move[-1][1] - 2)], axis=0)
-                    next_moves_l = self.find_next_jump(new_move, player)
-                    if next_moves_l.size == 0:
-                        next_moves_l = np.array([new_move])
-        next_moves_r = np.pad(next_moves_r, ((0, 0), (0, MAX_MOVE_LEN - next_moves_r.shape[1]), (0, 0)), 'constant', constant_values=MOVE_END)
-        next_moves_l = np.pad(next_moves_l, ((0, 0), (0, MAX_MOVE_LEN - next_moves_l.shape[1]), (0, 0)), 'constant', constant_values=MOVE_END)
-        moves = np.append(next_moves_r, next_moves_l, axis=0)
+            for dir in [-1, 1]:
+                if move[-1][1] + dir*2 < BOARD_SIZE and move[-1][1] + dir*2 >= 0:
+                    if self.board[land_row, move[-1][1] + dir*2] == EMPTY and self.board[next_row, move[-1][1] + dir] == -player:
+                        new_move = np.append(move, [(land_row, move[-1][1] + dir*2)], axis=0)
+                        next_moves = self.find_next_jump(new_move, player)
+                        if next_moves.size == 0:
+                            next_moves = np.array([new_move])
+                        next_moves = np.pad(next_moves, ((0, 0), (0, MAX_MOVE_LEN - next_moves.shape[1]), (0, 0)), 'constant', constant_values=MOVE_END)
+                        moves = np.append(moves, next_moves, axis=0)
         return moves
     
     def legal_free_moves(self, player):
