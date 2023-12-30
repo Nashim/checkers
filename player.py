@@ -13,4 +13,6 @@ class Player(Game):
         moves = self.legal_moves(self.player)
         if moves.size == 0:
             return np.array([])
-        return moves[np.random.randint(len(moves))]
+        next_move = moves[np.random.randint(len(moves))]
+    
+        return next_move
